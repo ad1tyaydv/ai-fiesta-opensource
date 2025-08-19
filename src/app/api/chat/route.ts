@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchOpenRouter } from "@/lib/openrouter";
+import { runGroqChat } from "@/lib/groq";
 
 export async function POST(req: NextRequest) {
     try {
@@ -8,9 +9,12 @@ export async function POST(req: NextRequest) {
 
         if(model.startsWith('openrouter/')) {
             const openRouterModel = model.replace('openrouter/', '');
-            const stream = await fetchOpenRouter(messages, openRouterModel);
-            
+            const stream = await fetchOpenRouter(messages, openRouterModel);   
             return new Response(stream);
+        }
+        else if (model.startsWith('groq/')) {
+            const groqModel = model.replace('groq/', '');
+            const stream = await runGroqChat(messages, groqModel);
         }
 
     } catch (error: any) {
