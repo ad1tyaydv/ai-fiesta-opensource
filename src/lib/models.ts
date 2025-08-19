@@ -25,4 +25,9 @@ export const MODELS: ModelDef[] = [
     label: "DeepSeek Chat v3 (free)",
     model: "deepseek/deepseek-chat-v3-0324:free",
   },
+  {
+    id: "gemini-flash",
+    label: "Gemini 1.5 Flash",
+    model: "gemini-1.5-flash",
+  },
 ];
