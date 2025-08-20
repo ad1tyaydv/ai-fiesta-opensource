@@ -266,7 +266,7 @@ export default function Chat() {
         <div className="w-full px-4 py-3 bg-gray-900 border-b border-gray-800 flex justify-between items-center">
           <h1 className="text-xl font-bold">ai-fiesta-opensource</h1>
           <a
-            href="https://github.com/ad1tyaydv/open-fiesta-opensource"
+            href="https://github.com/ad1tyaydv/ai-fiesta-opensource"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 border border-gray-300 px-3 py-1.5 rounded-full hover:bg-white hover:text-black transition text-sm font-medium"
