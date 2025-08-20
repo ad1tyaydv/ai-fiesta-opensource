@@ -77,8 +77,8 @@ export default function Chat() {
       </div>
 
       {/* Bottom Chat Input */}
-      <div className="p-4 border-t border-gray-700 bg-gray-900 flex justify-center">
-        <div className="w-full max-w-3xl bg-[#1E1E1E] rounded-xl flex items-center px-4 py-2 gap-2">
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full px-4 flex justify-center z-50">
+        <div className="w-full max-w-3xl bg-[#1E1E1E] rounded-xl flex items-center px-4 py-2 gap-2 shadow-lg border border-gray-700">
           <textarea
             autoFocus
             value={message}
@@ -89,7 +89,6 @@ export default function Chat() {
             className="flex-1 bg-transparent resize-none outline-none text-white placeholder-gray-400"
           />
 
-          {/* Optional Icons (Replace with React Icons if needed) */}
           <button
             type="button"
             className="p-2 rounded-md bg-[#2A2A2A] hover:bg-[#3A3A3A] text-white"
@@ -107,7 +106,6 @@ export default function Chat() {
           </button>
 
           <button
-            type="button"
             onClick={sendMessage}
             disabled={loading}
             className="p-2 rounded-md bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
