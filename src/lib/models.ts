@@ -11,11 +11,6 @@ export const MODELS: ModelDef[] = [
     model: "deepseek/deepseek-r1:free",
   },
   {
-    id: "llama-33-70b",
-    label: "Llama 3.3 70B Instruct (free)",
-    model: "meta-llama/llama-3.3-70b-instruct:free",
-  },
-  {
     id: "qwen3-coder",
     label: "Qwen3 Coder (free)",
     model: "qwen/qwen3-coder:free",

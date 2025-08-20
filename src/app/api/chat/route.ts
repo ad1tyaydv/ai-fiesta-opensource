@@ -1,32 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchOpenRouter } from "@/lib/openrouter";
 import { runGroqChat } from "@/lib/groq";
+import { fetchGemini } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
-    try {
-        const reqBody = await req.json();
-        const {messages, model} = reqBody;
+  try {
+    const { messages } = await req.json();
 
-        if(model.startsWith('openrouter/')) {
-            const openRouterModel = model.replace('openrouter/', '');
-            const stream = await fetchOpenRouter(messages, openRouterModel);   
-            return new Response(stream);
-        }
-        else if (model.startsWith('groq/')) {
-            const groqModel = model.replace('groq/', '');
-            const stream = await runGroqChat(messages, groqModel);
-        }
+    const [openrouterRes, groqRes, geminiRes, qwenRes] = await Promise.all([
+      fetchOpenRouter(messages, "meta-llama/llama-3.3-70b-instruct:free"),
+      runGroqChat(messages, "openai/gpt-oss-20b"),
+      fetchGemini(messages),
+      fetchOpenRouter(messages, "qwen/qwen3-coder:free")
+    ]);
 
-    } catch (error: any) {
-        console.log("Chat API error", error);
-        return NextResponse.json(
-            JSON.stringify(
-                {error: "Internal server error"}
-            ),
-            {
-                status: 500,
-                headers: {'Content-Type': 'application/json'}
-            }
-        );
-    }
+    return NextResponse.json({
+      openrouter: openrouterRes,
+      groq: groqRes,
+      gemini: geminiRes,
+      qwen: qwenRes,
+    });
+  } catch (error) {
+    console.error("Chat API error", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

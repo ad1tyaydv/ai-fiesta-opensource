@@ -1,103 +1,86 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+
+export default function Chat() {
+  const [message, setMessage] = useState("");
+  const [responses, setResponses] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  const sendMessage = async () => {
+    if (!message.trim()) return;
+    setLoading(true);
+    setResponses(null);
+
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      body: JSON.stringify({ messages: [{ role: "user", content: message }] }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const data = await res.json();
+    setResponses(data);
+    setLoading(false);
+    setMessage("");
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="h-screen flex flex-col bg-black text-white">
+      {/* Response Section */}
+      <div className="flex flex-1 overflow-hidden divide-x divide-gray-800">
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* Gemini */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <h2 className="text-green-400 font-semibold mb-2 text-lg">🌟 Gemini</h2>
+          <div className="whitespace-pre-wrap">
+            {responses?.gemini || (loading ? "Waiting..." : "Ask me anything!")}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        {/* Groq */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <h2 className="text-yellow-400 font-semibold mb-2 text-lg">⚡ Groq</h2>
+          <div className="whitespace-pre-wrap">
+            {responses?.groq || (loading ? "Waiting..." : "Ask me anything!")}
+          </div>
+        </div>
+
+        {/* OpenRouter */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <h2 className="text-pink-400 font-semibold mb-2 text-lg">🧠 DeepSeek</h2>
+          <div className="whitespace-pre-wrap">
+            {responses?.openrouter || (loading ? "Waiting..." : "Ask me anything!")}
+          </div>
+        </div>
+
+        {/* Qwen */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <h2 className="text-cyan-400 font-semibold mb-2 text-lg">💻 Qwen Coder</h2>
+          <div className="whitespace-pre-wrap">
+            {responses?.qwen || (loading ? "Waiting..." : "Ask me anything!")}
+          </div>
+        </div>
+      </div>
+
+      {/* Chat Input Section */}
+      <div className="p-4 border-t border-gray-700 bg-gray-900 flex justify-center">
+        <div className="w-full max-w-3xl flex items-center gap-2">
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Ask me anything..."
+            rows={1}
+            className="flex-1 p-2 rounded bg-gray-800 resize-none text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <button
+            onClick={sendMessage}
+            disabled={loading}
+            className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white transition"
+          >
+            {loading ? "Sending..." : "Send"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
