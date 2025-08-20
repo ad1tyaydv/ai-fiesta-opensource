@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { fetchOpenRouter } from "@/lib/openrouter";
 import { runGroqChat } from "@/lib/groq";
 import { fetchGemini } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
   try {
+    // Check authentication
+    const user = await currentUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { messages } = await req.json();
 
     const [openrouterRes, groqRes, geminiRes, qwenRes] = await Promise.all([
