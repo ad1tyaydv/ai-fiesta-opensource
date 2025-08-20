@@ -40,43 +40,58 @@ export default function Chat() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-black text-white">
-      {/* AI Response Columns */}
-      <div className="flex flex-1 overflow-hidden divide-x divide-gray-800">
-        {/* Gemini */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <h2 className="text-green-400 font-semibold mb-2 text-lg">🌟 Gemini</h2>
-          <div className="whitespace-pre-wrap">
-            {responses?.gemini || (loading ? "Waiting..." : "Ask me anything!")}
-          </div>
-        </div>
+    <div className="h-screen flex flex-col bg-black text-white overflow-hidden">
+      {/* ⭐ Top Bar */}
+      <div className="w-full px-4 py-3 bg-gray-900 border-b border-gray-800 flex justify-between items-center">
+        <h1 className="text-xl font-bold">ai-fiesta-opensource</h1>
+        <a
+          href="https://github.com/ad1tyaydv/open-fiesta"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-white text-black px-4 py-1.5 rounded font-medium transition"
+        >
+          ⭐ Star this project
+        </a>
+      </div>
 
-        {/* Groq */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <h2 className="text-yellow-400 font-semibold mb-2 text-lg">⚡ Groq</h2>
-          <div className="whitespace-pre-wrap">
-            {responses?.groq || (loading ? "Waiting..." : "Ask me anything!")}
+      {/* AI Responses */}
+      <div className="flex-1 overflow-x-auto sm:overflow-x-hidden">
+        <div className="flex flex-nowrap sm:flex-wrap h-full min-w-[640px] sm:min-w-full divide-x divide-gray-800">
+          {/* Gemini */}
+          <div className="flex-1 min-w-[300px] p-4 overflow-y-auto">
+            <h2 className="text-white font-semibold mb-2 text-lg">Gemini 1.5 Flash</h2>
+            <div className="whitespace-pre-wrap">
+              {responses?.gemini || (loading ? "Waiting..." : "")}
+            </div>
           </div>
-        </div>
 
-        {/* DeepSeek (OpenRouter) */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <h2 className="text-pink-400 font-semibold mb-2 text-lg">🧠 DeepSeek</h2>
-          <div className="whitespace-pre-wrap">
-            {responses?.openrouter || (loading ? "Waiting..." : "Ask me anything!")}
+          {/* Groq */}
+          <div className="flex-1 min-w-[300px] p-4 overflow-y-auto">
+            <h2 className="text-white font-semibold mb-2 text-lg">Mixtral-8x7B</h2>
+            <div className="whitespace-pre-wrap">
+              {responses?.groq || (loading ? "Waiting..." : "")}
+            </div>
           </div>
-        </div>
 
-        {/* Qwen */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <h2 className="text-cyan-400 font-semibold mb-2 text-lg">💻 Qwen Coder</h2>
-          <div className="whitespace-pre-wrap">
-            {responses?.qwen || (loading ? "Waiting..." : "Ask me anything!")}
+          {/* DeepSeek */}
+          <div className="flex-1 min-w-[300px] p-4 overflow-y-auto">
+            <h2 className="text-white font-semibold mb-2 text-lg">DeepSeek Chat V3</h2>
+            <div className="whitespace-pre-wrap">
+              {responses?.openrouter || (loading ? "Waiting..." : "")}
+            </div>
+          </div>
+
+          {/* Qwen Coder */}
+          <div className="flex-1 min-w-[300px] p-4 overflow-y-auto">
+            <h2 className="text-white font-semibold mb-2 text-lg">Qwen 3 Coder</h2>
+            <div className="whitespace-pre-wrap">
+              {responses?.qwen || (loading ? "Waiting..." : "")}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Chat Input */}
+      {/* Floating Chat Input */}
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full px-4 flex justify-center z-50">
         <div className="w-full max-w-3xl bg-[#1E1E1E] rounded-xl flex items-center px-4 py-2 gap-2 shadow-lg border border-gray-700">
           <textarea
@@ -88,23 +103,6 @@ export default function Chat() {
             rows={1}
             className="flex-1 bg-transparent resize-none outline-none text-white placeholder-gray-400"
           />
-
-          <button
-            type="button"
-            className="p-2 rounded-md bg-[#2A2A2A] hover:bg-[#3A3A3A] text-white"
-            title="Mic"
-          >
-            🎤
-          </button>
-
-          <button
-            type="button"
-            className="p-2 rounded-md bg-[#2A2A2A] hover:bg-[#3A3A3A] text-white"
-            title="Settings"
-          >
-            ⚙️
-          </button>
-
           <button
             onClick={sendMessage}
             disabled={loading}
