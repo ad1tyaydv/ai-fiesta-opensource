@@ -24,7 +24,7 @@ export default function HomePage() {
             <span className="text-black font-bold text-2xl">AI</span>
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-green-400 to-purple-400 bg-clip-text text-transparent">
-            AI Fiesta
+            AI Fiesta Opensource
           </h1>
           <p className="text-gray-400 mt-2">Experience the power of multiple AI models working together in perfect harmony</p>
         </div>
