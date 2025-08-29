@@ -13,19 +13,47 @@ export default function ChatClient() {
   const { user } = useUser();
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [messageCount, setMessageCount] = useState(0);
+  const [messageCount, setMessageCount] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("messageCount");
+      return stored ? parseInt(stored, 10) : 0;
+    }
+    return 0;
+  });
+
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [chatHistory, setChatHistory] = useState<Chat[]>([]);
   const [currentChatId, setCurrentChatId] = useState<number | null>(null);
 
   const maxMessages = 3;
 
+  // Load chatHistory, currentChatId and messageCount on mount
   useEffect(() => {
-    const initialChat: Chat = { id: 1, title: "New Chat", responses: [] };
-    setChatHistory([initialChat]);
-    setCurrentChatId(1);
+    const storedChats = localStorage.getItem("chatHistory");
+    const storedChatId = localStorage.getItem("currentChatId");
+
+    if (storedChats) {
+      setChatHistory(JSON.parse(storedChats));
+      setCurrentChatId(storedChatId ? parseInt(storedChatId) : null);
+    } else {
+      const initialChat: Chat = { id: 1, title: "New Chat", responses: [] };
+      setChatHistory([initialChat]);
+      setCurrentChatId(1);
+    }
   }, []);
+
+  // Save chatHistory to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+  }, [chatHistory]);
+
+  // Save currentChatId when changed
+  useEffect(() => {
+    if (currentChatId !== null) {
+      localStorage.setItem("currentChatId", currentChatId.toString());
+    }
+  }, [currentChatId]);
 
   const currentChat = chatHistory.find((chat) => chat.id === currentChatId);
   const responses = currentChat ? currentChat.responses : [];
@@ -43,7 +71,6 @@ export default function ChatClient() {
         body: JSON.stringify({ messages: [{ role: "user", content: message }] }),
         headers: { "Content-Type": "application/json" },
       });
-
       const data = await res.json();
 
       setChatHistory((prev) =>
@@ -55,7 +82,11 @@ export default function ChatClient() {
       );
 
       setMessage("");
-      setMessageCount((prev) => prev + 1);
+      setMessageCount((prev) => {
+        const newCount = prev + 1;
+        localStorage.setItem("messageCount", newCount.toString());
+        return newCount;
+      });
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -80,67 +111,68 @@ export default function ChatClient() {
     setCurrentChatId(newChat.id);
   };
 
-  const switchChat = (id: number) => {
-    setCurrentChatId(id);
-  };
+  const switchChat = (id: number) => setCurrentChatId(id);
 
   const deleteChat = (id: number) => {
-    const filtered = chatHistory.filter((chat) => chat.id !== id);
-    setChatHistory(filtered);
-    if (currentChatId === id && filtered.length > 0) {
-      setCurrentChatId(filtered[0].id);
+    const updated = chatHistory.filter((chat) => chat.id !== id);
+    setChatHistory(updated);
+    if (currentChatId === id && updated.length > 0) {
+      setCurrentChatId(updated[0].id);
     }
   };
 
   return (
-    <div className="h-screen flex flex-col md:flex-row bg-black text-white">
+    <div className="h-screen w-screen overflow-hidden bg-black text-white relative">
       {/* Sidebar */}
       <div
-        className={`fixed md:relative z-40 bg-[#121212] md:w-64 w-3/4 sm:w-64 h-full transform transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        className={`fixed top-0 left-0 z-40 bg-[#121212] w-64 h-full transition-transform duration-300 ease-in-out ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="p-4 space-y-4">
-          <h2 className="text-xl font-bold">AI Fiesta</h2>
+        <div className="p-4 space-y-4 flex flex-col h-full">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">AI Fiesta</h2>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="text-gray-400 hover:text-white text-xl"
+            >
+              ×
+            </button>
+          </div>
           <button
             onClick={startNewChat}
             className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
           >
             + New Chat
           </button>
-          <div>
-            <h3 className="text-sm text-gray-400 mb-2">Chats</h3>
-            <ul className="space-y-2">
-              {chatHistory.map((chat) => (
-                <li
-                  key={chat.id}
-                  className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer ${
-                    currentChatId === chat.id
-                      ? "bg-gray-700 text-white"
-                      : "bg-gray-800 text-gray-300"
-                  }`}
-                  onClick={() => switchChat(chat.id)}
-                >
-                  <span className="truncate">{chat.title}</span>
-                  {chatHistory.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteChat(chat.id);
-                      }}
-                      className="ml-2 text-red-400 hover:text-red-500"
-                    >
-                      ×
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
+          <div className="flex-grow overflow-y-auto">
+            {chatHistory.map((chat) => (
+              <div
+                key={chat.id}
+                onClick={() => switchChat(chat.id)}
+                className={`px-3 py-2 rounded-md cursor-pointer ${
+                  currentChatId === chat.id
+                    ? "bg-gray-700 text-white"
+                    : "bg-gray-800 text-gray-300"
+                } flex justify-between items-center`}
+              >
+                <span className="truncate">{chat.title}</span>
+                {chatHistory.length > 1 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteChat(chat.id);
+                    }}
+                    className="ml-2 text-red-400 hover:text-red-500"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
-
-          {/* User info */}
           {user && (
-            <div className="mt-6 p-3 rounded-md bg-gray-900">
+            <div className="mt-4 p-3 rounded-md bg-gray-900">
               <div className="flex items-center gap-3">
                 <img
                   src={user.imageUrl}
@@ -168,34 +200,32 @@ export default function ChatClient() {
         </div>
       </div>
 
-      {/* Overlay for mobile sidebar */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-60 z-30 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+      {/* Open Sidebar Button */}
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed top-4 left-4 z-50 bg-gray-800 text-white p-2 rounded-md"
+        >
+          ☰
+        </button>
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <div
+        className={`h-full flex flex-col transition-all duration-300 ease-in-out ${
+          sidebarOpen ? "ml-64" : "ml-0"
+        }`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-gray-900 border-b border-gray-800">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen((prev) => !prev)}
-              className="md:hidden text-white text-xl"
-            >
-              ☰
-            </button>
-            <h1 className="text-lg font-bold">ai-fiesta-opensource</h1>
-          </div>
+          <h1 className="text-lg font-bold ml-2">ai-fiesta-opensource</h1>
           <div className="flex items-center gap-4">
             <a
               href="https://github.com/ad1tyaydv/ai-fiesta-opensource"
               target="_blank"
               className="text-sm border border-gray-400 rounded-full px-3 py-1 hover:bg-white hover:text-black"
             >
-              Star Project
+              Star Project
             </a>
             <SignedIn>
               <UserButton afterSignOutUrl="/" />
@@ -203,36 +233,38 @@ export default function ChatClient() {
           </div>
         </div>
 
-        {/* AI Responses */}
-        <div className="flex-1 overflow-x-auto bg-black">
-          <div className="flex h-full min-w-max divide-x divide-gray-800">
-            {["gemini", "groq", "openrouter", "qwen"].map((model) => (
-              <div
-                key={model}
-                className="min-w-[300px] max-w-[300px] p-4 h-full"
-              >
-                <h2 className="inline-block mb-4 px-3 py-1 text-sm font-medium text-gray-100 bg-gray-800 rounded-md border border-gray-700 shadow-sm">
-                  {model === "gemini"
-                    ? "Gemini 1.5 Flash"
-                    : model === "groq"
-                    ? "Mixtral-8x7B"
-                    : model === "openrouter"
-                    ? "DeepSeek Chat V3"
-                    : "Qwen 3 Coder"}
-                </h2>
-                <div className="whitespace-pre-wrap space-y-2 text-sm">
-                  {responses.map((r, i) => (
-                    <div key={i}>{r[model] || r.error}</div>
-                  ))}
-                  {loading && <div className="text-gray-400">Loading...</div>}
+        {/* AI Panels */}
+        <div className="flex-1 overflow-hidden h-[calc(100vh-122px)]">
+          <div className="overflow-x-auto h-full">
+            <div className="flex h-full min-w-max divide-x divide-gray-800">
+              {["gemini", "groq", "openrouter", "qwen"].map((model) => (
+                <div
+                  key={model}
+                  className="min-w-[300px] max-w-[300px] p-4 h-full"
+                >
+                  <h2 className="inline-block mb-4 px-3 py-1 text-sm font-medium text-gray-100 bg-gray-800 rounded-md border border-gray-700 shadow-sm">
+                    {model === "gemini"
+                      ? "Gemini 1.5 Flash"
+                      : model === "groq"
+                      ? "Mixtral‑8x7B"
+                      : model === "openrouter"
+                      ? "DeepSeek Chat V3"
+                      : "Qwen 3 Coder"}
+                  </h2>
+                  <div className="whitespace-pre-wrap space-y-2 text-sm">
+                    {responses.map((r, i) => (
+                      <div key={i}>{r[model] || r.error}</div>
+                    ))}
+                    {loading && <div className="text-gray-400">Loading...</div>}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Input Box */}
-        <div className="w-full px-4 py-3 bg-black border-t border-gray-900">
+        <div className="px-4 py-3 bg-black border-t border-gray-900">
           <div className="max-w-3xl mx-auto flex items-center gap-2">
             <textarea
               value={message}
